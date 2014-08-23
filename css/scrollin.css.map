@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,CAAE;EAED,UAAU,EAAE,UAAU;EACtB,eAAe,EAAE,UAAU;EAC3B,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC",
+"sources": ["../sass/scrollin.scss"],
+"names": [],
+"file": "scrollin.css"
+}
