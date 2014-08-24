@@ -18,7 +18,7 @@
 
 		load: function() {
 
-			console.log('load');
+			$('.scrollin').scrollin();
 
 		}
 
