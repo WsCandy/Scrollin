@@ -173,6 +173,8 @@
 						anchor.css({
 
 							'display' : 'block',
+							'position' : 'relative',
+							'margin' : '0 auto',
 							'z-index' : '20'
 
 						});
