@@ -68,13 +68,16 @@
 
 		var settings = $.extend(instance.defaults, options);
 
-		var inner, track, anchor, visibleDecimal, scollLimit, hiddenDecimal, anchorLimit, paddingTop, paddingBottom;
+		var inner, track, anchor, visibleDecimal, scollLimit, hiddenDecimal, anchorLimit, paddingTop, paddingBottom,
+			content = self.children(),
+			isTouch = ("ontouchstart" in document.documentElement);
 
 		instance.private_methods = {
 
 			initialise: function() {
 
 				instance.private_methods.setup();
+				instance.private_methods.resize();
 
 			},
 
@@ -98,7 +101,32 @@
 
 				}
 
-				instance.public_methods.update();
+				instance.public_methods.update(false);
+
+			},
+
+			remove: function() {
+
+				anchor.remove();
+				track.remove();
+
+				content.unwrap();
+
+				if(window.removeEventListener) {
+
+					container[0].removeEventListener(("onwheel" in document || document.documentMode >= 9) ? "wheel" : (document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll"), instance.private_methods.actions['wheel'], false);
+
+				} else {
+
+					container[0].onmousewheel = null;
+					
+				}
+
+				if(isTouch) {
+
+					container[0].ontouchstart = null;
+
+				}
 
 			},
 
@@ -114,11 +142,11 @@
 
 						inner = $('<div />', {
 
-									class : self.attr('class') + '__inner'
+									'class' : self.attr('class') + '__inner'
 
 								});
 
-						self.children().wrapAll(inner);
+						content.wrapAll(inner);
 
 						inner = $('.'+self.attr('class') + '__inner');
 
@@ -143,7 +171,7 @@
 
 						$('<div />', {
 
-							class : self.attr('class') + '__track'
+							'class' : self.attr('class') + '__track'
 
 						}).appendTo(self);
 
@@ -164,7 +192,7 @@
 
 						$('<div />', {
 
-							class : self.attr('class') + '__anchor'
+							'class' : self.attr('class') + '__anchor'
 
 						}).appendTo(track);
 
@@ -173,8 +201,6 @@
 						anchor.css({
 
 							'display' : 'block',
-							'position' : 'relative',
-							'margin' : '0 auto',
 							'z-index' : '20'
 
 						});
@@ -229,6 +255,17 @@
 
 				touch: function() {
 
+					if(isTouch) {
+
+						container[0].ontouchstart = function(e) {
+
+							instance.private_methods.actions['startPos'] = anchor.offset().top - e.pageY;
+
+							instance.private_methods.actions['init'](e.originalEvent, inner);
+
+						}
+
+					}
 
 				}
 
@@ -245,19 +282,39 @@
 
 					$('body').addClass('highlight-free');
 
-					$(document).mousemove(function(e) {
+					if(!isTouch) {
 
-						e.preventDefault();
-						instance.private_methods.actions['track'](e);
+						$(document).mousemove(function(e) {
 
-					});
+							e.preventDefault();
+							instance.private_methods.actions['track'](e);
 
-					$(document).mouseup(function(e) {
+						});
 
-						e.preventDefault();
-						instance.private_methods.actions['unbind'](e, element);
+						$(document).mouseup(function(e) {
 
-					});
+							e.preventDefault();
+							instance.private_methods.actions['unbind'](e, element);
+
+						});						
+
+					} else {
+
+						self.on('touchmove', function(e) {
+
+							e.preventDefault();
+							instance.private_methods.actions['track'](e.originalEvent);
+
+						});
+
+						self.on('touchcancel, touchend', function(e) {
+
+							e.preventDefault();
+							instance.private_methods.actions['unbind'](e, element);
+
+						});
+
+					}
 
 				},
 
@@ -315,7 +372,27 @@
 
 					$('body').removeClass('highlight-free');
 
+					self.off('touchmove');
+
 				}
+
+			},
+
+			resize: function() {
+
+				var resizeTimer;
+
+				$(window).resize(function() {
+
+					clearTimeout(resizeTimer);
+
+					resizeTimer = setTimeout(function() {
+
+						instance.public_methods['update']();
+
+					}, 100);					
+
+				});
 
 			},
 
@@ -329,7 +406,7 @@
 
 		instance.public_methods = {
 
-			update: function() {
+			update: function(rebuild) {
 
 				visibleDecimal = self.height() / inner.height();				
 				hiddenDecimal = 1 - visibleDecimal;
@@ -339,27 +416,56 @@
 				paddingTop = parseInt(track.css('padding-top'));
 				paddingBottom = parseInt(track.css('padding-bottom'));
 
-				inner.css({
+				if(rebuild == undefined) {
 
-					'top' : '0px'
+					track.css({
 
-				});
+						'height' : self.css('height'),
+						'display' : 'block',
+						'z-index' : '10'
 
-				track.css({
+					});
+					
+					anchor.css({
 
-					'height' : self.css('height'),
-					'display' : 'block',
-					'z-index' : '10'
+						'height' : visibleDecimal * 100 + '%'
 
-				});
-				
-				anchor.css({
+					});
 
-					'height' : visibleDecimal * 100 + '%',
-					'top' : paddingTop + 'px'
+				} else {
 
-				});
+					inner.css({
 
+						'top' : '0px'
+
+					});
+
+					track.css({
+
+						'height' : self.css('height'),
+						'display' : 'block',
+						'z-index' : '10'
+
+					});
+					
+					anchor.css({
+
+						'height' : visibleDecimal * 100 + '%',
+						'top' : paddingTop + 'px'
+
+					});					
+
+				}
+
+				if(visibleDecimal == 1) {
+
+					instance.private_methods['remove']();
+
+				} else if(rebuild != false && self.find(inner).size() <= 0) {
+
+					instance.private_methods['setup']();
+
+				}
 
 			}, 
 
@@ -368,13 +474,13 @@
 				var innerPos = scollLimit * (percent / 100),
 					anchorPos = anchorLimit * (percent / 100);
 
-				inner.css({
+				inner.animate({
 
 					'top' :  Math.min(0, Math.max(scollLimit, -Math.abs(innerPos))) + 'px'
 
 				});
 
-				anchor.css({
+				anchor.animate({
 
 					'top' : Math.max(paddingTop, Math.min(anchorLimit - paddingBottom, Math.abs(anchorPos))) + 'px'
 
