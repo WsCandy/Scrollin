@@ -2,7 +2,7 @@
 
 	'use strict';
 
-	var version = '1.0',
+	var version = '1.0.1',
 	    pluginName = 'Scrollin\'';
 
 	$.fn.scrollin = function(options, param) {

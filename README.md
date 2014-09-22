@@ -1,4 +1,4 @@
-Scrollin' v1.0.0
+Scrollin' v1.0.1
 ========
 
-They see me scrollin'
+Fixed multiple instance issue.
