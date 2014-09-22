@@ -11,12 +11,11 @@
 
 		for(var i = 0; i < this.length; i++) {
 
-			var self = $(this[i]),
-				container = this;
+			var self = $(this[i]);
 
 			if(!self.data('instance') && typeof options != 'string') {
 
-				var instance = new plugin(container, self, options);
+				var instance = new plugin(self, options);
 				self.data('instance', instance);
 				instance.private_methods.initialise();
 
@@ -54,7 +53,7 @@
 
 	}
 
-	function plugin(container, self, options, param) {
+	function plugin(self, options, param) {
 
 		var instance = this;
 
@@ -148,7 +147,7 @@
 
 						content.wrapAll(inner);
 
-						inner = $('.'+self.attr('class') + '__inner');
+						inner = self.find('.'+self.attr('class') + '__inner');
 
 						inner.css({
 
@@ -175,7 +174,7 @@
 
 						}).appendTo(self);
 
-						track = $('.'+self.attr('class') + '__track');
+						track = self.find('.'+self.attr('class') + '__track');
 						
 					};
 
@@ -196,11 +195,12 @@
 
 						}).appendTo(track);
 
-						anchor = $('.'+self.attr('class') + '__anchor');
+						anchor = self.find('.'+self.attr('class') + '__anchor');
 
 						anchor.css({
 
 							'display' : 'block',
+							'position' : 'relative',
 							'z-index' : '20'
 
 						});
@@ -217,11 +217,11 @@
 
 					if(window.addEventListener) {
 
-						container[0].addEventListener(("onwheel" in document || document.documentMode >= 9) ? "wheel" : (document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll"), instance.private_methods.actions['wheel'], false);
+						self[0].addEventListener(("onwheel" in document || document.documentMode >= 9) ? "wheel" : (document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll"), instance.private_methods.actions['wheel'], false);
 
 					} else {
 
-						container[0].onmousewheel = instance.private_methods.actions['wheel'];
+						self[0].onmousewheel = instance.private_methods.actions['wheel'];
 						
 					}
 

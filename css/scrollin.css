@@ -26,7 +26,8 @@ p {
   .scrollin__anchor {
     background: grey;
     width: 10px;
-    border-radius: 5px; }
+    border-radius: 5px;
+    position: relative; }
   .scrollin:hover .scrollin__track {
     opacity: 1; }
 
